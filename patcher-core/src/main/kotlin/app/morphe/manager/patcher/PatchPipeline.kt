@@ -90,6 +90,7 @@ class PatchPipeline(
                 logger = logger,
                 input = input,
                 keepArchitectures = keepArchitectures,
+                nativeLibraryPatches = request.nativeLibraryPatches,
                 listener = listener
             ).use { it.run(File(request.outputFile), patches) }
         } finally {
