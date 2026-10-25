@@ -6,6 +6,7 @@
 package app.morphe.manager.ui.screen.settings.system
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -14,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.morphe.manager.R
+import app.morphe.manager.domain.apk.signSelectedApk
+import app.morphe.manager.domain.manager.KeystoreManager
 import app.morphe.manager.domain.manager.SettingsSection
 import app.morphe.manager.domain.manager.SigningKeyInfo
 import app.morphe.manager.ui.screen.home.OnboardingState
@@ -37,6 +41,9 @@ import app.morphe.manager.ui.screen.shared.*
 import app.morphe.manager.ui.theme.ThemeTraitsDefaults
 import app.morphe.manager.ui.viewmodel.ImportExportViewModel
 import app.morphe.manager.ui.viewmodel.SettingsViewModel
+import app.morphe.manager.util.APK_MIMETYPE
+import app.morphe.manager.util.AppCoroutineScope
+import app.morphe.manager.util.displayName
 import app.morphe.manager.util.JSON_MIMETYPE
 import app.morphe.manager.util.TEXT_MIMETYPE
 import app.morphe.manager.util.isAndroidTv
@@ -66,6 +73,8 @@ fun FilesSection(
 ) {
     val context = LocalContext.current
     val messages = koinInject<UserMessages>()
+    val appScope = koinInject<AppCoroutineScope>()
+    val keystoreManager = koinInject<KeystoreManager>()
     val scope = rememberCoroutineScope()
     val isTV = remember { context.isAndroidTv() }
     val wrongCredentialsText = stringResource(R.string.settings_system_import_keystore_wrong_credentials)
@@ -105,6 +114,77 @@ fun FilesSection(
         contract = ActivityResultContracts.CreateDocument(JSON_MIMETYPE)
     ) { uri -> uri?.let { importExportViewModel.exportManagerSettings(it) } }
 
+    // Automatic signing is already performed by PatcherWorker for every patched APK.
+    // Manual signing is an independent, opt-in action for a user-selected APK.
+    var pendingManualApkUri by rememberSaveable { mutableStateOf<String?>(null) }
+    var showManualSigningConfirm by rememberSaveable { mutableStateOf(false) }
+    var showAutomaticSigningInfo by remember { mutableStateOf(false) }
+
+    val manualSigningOutput = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument(APK_MIMETYPE)
+    ) { destination ->
+        val source = pendingManualApkUri?.let(Uri::parse)
+        pendingManualApkUri = null
+        if (source != null && destination != null) {
+            appScope.launch {
+                val progress = messages.showUntilDismissed(R.string.settings_system_manual_signing_progress)
+                try {
+                    signSelectedApk(context.applicationContext, keystoreManager, source, destination)
+                    messages.show(R.string.settings_system_manual_signing_success)
+                } catch (failure: Exception) {
+                    Log.e("Morphe ManualSigning", "Manual APK signing failed", failure)
+                    messages.show(R.string.settings_system_manual_signing_failed, long = true)
+                } finally {
+                    progress.dismiss()
+                }
+            }
+        }
+    }
+    val manualSigningInput = rememberAdaptiveFilePicker(
+        mimeTypes = arrayOf("*/*"),
+        customPickerMimeTypes = arrayOf(APK_MIMETYPE),
+        onResult = { selected ->
+            if (selected != null) {
+                pendingManualApkUri = selected.toString()
+                showManualSigningConfirm = true
+            }
+        }
+    )
+
+    DialogHost(visible = showAutomaticSigningInfo) {
+        ConfirmDialog(
+            title = stringResource(R.string.settings_system_auto_signing_title),
+            message = stringResource(R.string.settings_system_auto_signing_detail),
+            primaryText = stringResource(R.string.close),
+            onConfirm = { showAutomaticSigningInfo = false },
+            onDismiss = { showAutomaticSigningInfo = false }
+        )
+    }
+
+    DialogHost(visible = showManualSigningConfirm) {
+        ConfirmDialog(
+            title = stringResource(R.string.settings_system_manual_signing_title),
+            message = stringResource(R.string.settings_system_manual_signing_warning),
+            primaryText = stringResource(R.string.settings_system_manual_signing_choose_destination),
+            onConfirm = {
+                showManualSigningConfirm = false
+                val selected = pendingManualApkUri?.let(Uri::parse)
+                if (selected != null) {
+                    val filename = selected.displayName(context.contentResolver).orEmpty()
+                    val basename = filename.substringBeforeLast(".apk", filename)
+                        .ifBlank { "app" }
+                        .replace('/', '_')
+                        .replace('\\', '_')
+                    manualSigningOutput.launch("${basename}_morphe_signed.apk")
+                }
+            },
+            onDismiss = {
+                showManualSigningConfirm = false
+                pendingManualApkUri = null
+            }
+        )
+    }
+
     DialogHost(visible = importExportViewModel.showCredentialsDialog) {
         KeystoreCredentialsDialog(
             onDismiss = importExportViewModel::cancelKeystoreImport,
@@ -138,6 +218,26 @@ fun FilesSection(
         SettingsGroup {
             OriginalApkItems(settingsViewModel, tour, onOpenSubpage)
             SubpageItem(SettingsSubpage.STORAGE, onOpenSubpage)
+        }
+    }
+
+    SettingsSection(
+        title = stringResource(R.string.settings_system_signing_section),
+        icon = MaterialSymbols.Rounded.Key
+    ) {
+        SettingsGroup {
+            SettingsItem(
+                onClick = { showAutomaticSigningInfo = true },
+                icon = MaterialSymbols.Rounded.Key,
+                title = stringResource(R.string.settings_system_auto_signing_title),
+                subtitle = stringResource(R.string.settings_system_auto_signing_description)
+            )
+            SettingsItem(
+                onClick = { manualSigningInput() },
+                icon = MaterialSymbols.Rounded.Edit,
+                title = stringResource(R.string.settings_system_manual_signing_title),
+                subtitle = stringResource(R.string.settings_system_manual_signing_description)
+            )
         }
     }
 
