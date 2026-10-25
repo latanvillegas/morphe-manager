@@ -1564,4 +1564,16 @@ Do you still want to continue?"</string>
     <string name="tour_prompt_confirm">Show me around</string>
     <string name="onboarding_restart_title">Feature tour</string>
     <string name="onboarding_restart_desc">A guided tour of key features</string>
+    <!-- Standalone APK signing (automatic patch signing remains mandatory). -->
+    <string name="settings_system_signing_section">APK signing</string>
+    <string name="settings_system_auto_signing_title">Automatic signing</string>
+    <string name="settings_system_auto_signing_description">Enabled when patching apps</string>
+    <string name="settings_system_auto_signing_detail">Morphe automatically signs every patched APK with your signing key so Android can install it. This remains enabled to keep patching and installation working.</string>
+    <string name="settings_system_manual_signing_title">Sign an APK manually</string>
+    <string name="settings_system_manual_signing_description">Choose an APK and save a separately signed copy</string>
+    <string name="settings_system_manual_signing_warning">The new APK will be signed with Morphe\'s existing key. Its signature may differ from the installed app, preventing an update without uninstalling that app. The original APK will not be changed.</string>
+    <string name="settings_system_manual_signing_choose_destination">Choose where to save</string>
+    <string name="settings_system_manual_signing_progress">Signing APK…</string>
+    <string name="settings_system_manual_signing_success">APK signed and saved</string>
+    <string name="settings_system_manual_signing_failed">Unable to sign this APK. Check that it is a valid APK and that the signing key works.</string>
 </resources>

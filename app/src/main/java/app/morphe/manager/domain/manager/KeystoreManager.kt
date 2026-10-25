@@ -65,6 +65,8 @@ class KeystoreManager(app: Application, private val prefs: PreferencesManager) {
     // The signer is kept for the same reason, until the keystore or its settings change
     private var cachedSigner: Pair<List<Any?>, ApkSigner.Signer>? = null
     private val signerLock = Mutex()
+    // Prevent a manual signing action from sharing the cached signer with an active patch run.
+    private val signingOperationLock = Mutex()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private suspend fun updatePrefs(alias: String, pass: String, keystorePw: String) = prefs.edit {
@@ -84,10 +86,12 @@ class KeystoreManager(app: Application, private val prefs: PreferencesManager) {
      * Signs [apk] in place for this device, which never needs a v1 signature. Only ever handed
      * what the patcher just wrote, whose headers it already rewrites where the signer would reject them.
      */
-    suspend fun sign(apk: File) = withContext(Dispatchers.Default) {
-        signer()?.signApk(apk, apk, Build.VERSION.SDK_INT)
-            // Creates the keystore on the first patch
-            ?: ApkUtils.signApk(apk, apk, prefs.keystoreAlias.get(), signingDetails(), Build.VERSION.SDK_INT)
+    suspend fun sign(apk: File) = signingOperationLock.withLock {
+        withContext(Dispatchers.Default) {
+            signer()?.signApk(apk, apk, Build.VERSION.SDK_INT)
+                // Creates the keystore on the first patch or manual signing operation.
+                ?: ApkUtils.signApk(apk, apk, prefs.keystoreAlias.get(), signingDetails(), Build.VERSION.SDK_INT)
+        }
     }
 
     /** Starts loading the signing key, which takes BouncyCastle a while, so signing need not wait for it. */

@@ -1471,4 +1471,16 @@ Detalles: %2$s"</string>
     <string name="tour_prompt_confirm">Muéstrame</string>
     <string name="onboarding_restart_title">Tour de funciones</string>
     <string name="onboarding_restart_desc">Una visita guiada por las funciones principales</string>
+    <!-- Firma independiente de APK (el parcheador conserva su firma automática). -->
+    <string name="settings_system_signing_section">Firma de APK</string>
+    <string name="settings_system_auto_signing_title">Firma automática</string>
+    <string name="settings_system_auto_signing_description">Activada al parchear aplicaciones</string>
+    <string name="settings_system_auto_signing_detail">Morphe firma automáticamente cada APK parcheado con tu clave para que Android pueda instalarlo. La firma sigue activada para conservar el funcionamiento del parcheo y la instalación.</string>
+    <string name="settings_system_manual_signing_title">Firmar APK manualmente</string>
+    <string name="settings_system_manual_signing_description">Selecciona una APK y guarda una copia firmada por separado</string>
+    <string name="settings_system_manual_signing_warning">La nueva APK se firmará con la clave actual de Morphe. Su firma puede ser distinta a la de la aplicación instalada e impedir una actualización sin desinstalarla. La APK original no se modificará.</string>
+    <string name="settings_system_manual_signing_choose_destination">Elegir dónde guardar</string>
+    <string name="settings_system_manual_signing_progress">Firmando APK…</string>
+    <string name="settings_system_manual_signing_success">APK firmada y guardada</string>
+    <string name="settings_system_manual_signing_failed">No se pudo firmar esta APK. Comprueba que el archivo es válido y que la clave de firma funciona.</string>
 </resources>
