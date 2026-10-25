@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_apk_signing_title">APK signing</string>
+    <string name="settings_apk_signing_auto_title">Automatic signing</string>
+    <string name="settings_apk_signing_auto_description">Enabled: patched APKs are signed automatically with Morphe\'s current signing key</string>
+    <string name="settings_apk_signing_auto_info">Automatic signing stays enabled so patched APKs can be installed. Import or export the key under Signing key.</string>
+    <string name="settings_apk_signing_manual_title">Sign APK manually</string>
+    <string name="settings_apk_signing_manual_description">Choose an APK and save a separately signed copy. Use the same key to update an installed app.</string>
+    <string name="settings_apk_signing_manual_busy">Signing APK; keep Morphe open</string>
+    <string name="settings_apk_signing_manual_success">Signed APK saved</string>
+    <string name="settings_apk_signing_manual_failure">Could not sign APK: %1$s</string>
+    <string name="settings_apk_signing_manual_invalid">The selected file is not an Android APK</string>
+    <string name="settings_apk_signing_manual_cannot_read">Could not read the selected APK</string>
+    <string name="settings_apk_signing_manual_cannot_write">Could not save the signed APK</string>
+</resources>

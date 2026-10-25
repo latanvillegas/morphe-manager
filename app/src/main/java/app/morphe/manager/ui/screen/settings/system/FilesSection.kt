@@ -141,6 +141,24 @@ fun FilesSection(
         }
     }
 
+    // Automatic signing is already part of the patcher. The separate manual action signs
+    // an existing APK without running the patches again.
+    val automaticSigningInfo = stringResource(R.string.settings_apk_signing_auto_info)
+    SettingsSection(
+        title = stringResource(R.string.settings_apk_signing_title),
+        icon = MaterialSymbols.Rounded.Key
+    ) {
+        SettingsGroup {
+            SettingsItem(
+                onClick = { messages.show(automaticSigningInfo, long = true) },
+                leadingContent = { ThemedIcon(icon = MaterialSymbols.Rounded.Key) },
+                title = stringResource(R.string.settings_apk_signing_auto_title),
+                subtitle = stringResource(R.string.settings_apk_signing_auto_description)
+            )
+            ManualApkSigningItem()
+        }
+    }
+
     SettingsSection(
         title = stringResource(R.string.settings_section_backup),
         icon = MaterialSymbols.Rounded.Backup

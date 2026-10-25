@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_apk_signing_title">Firma de APK</string>
+    <string name="settings_apk_signing_auto_title">Firma automática</string>
+    <string name="settings_apk_signing_auto_description">Activada: las APK parcheadas se firman con la clave actual de Morphe</string>
+    <string name="settings_apk_signing_auto_info">La firma automática permanece activada para poder instalar las APK parcheadas. Puedes importar o exportar la clave en Clave de firma.</string>
+    <string name="settings_apk_signing_manual_title">Firmar APK manualmente</string>
+    <string name="settings_apk_signing_manual_description">Selecciona una APK y guarda otra copia firmada. Para actualizar una aplicación instalada, usa su misma clave.</string>
+    <string name="settings_apk_signing_manual_busy">Firmando APK; mantén Morphe abierto</string>
+    <string name="settings_apk_signing_manual_success">APK firmada y guardada</string>
+    <string name="settings_apk_signing_manual_failure">No se pudo firmar la APK: %1$s</string>
+    <string name="settings_apk_signing_manual_invalid">El archivo seleccionado no es una APK de Android</string>
+    <string name="settings_apk_signing_manual_cannot_read">No se pudo leer la APK seleccionada</string>
+    <string name="settings_apk_signing_manual_cannot_write">No se pudo guardar la APK firmada</string>
+</resources>
