@@ -5,6 +5,7 @@
 
 package app.morphe.manager.patcher
 
+import app.morphe.manager.patcher.native.NativeLibraryPatch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
@@ -27,7 +28,8 @@ data class PatchRequest(
     val workspaceDir: String,
     val bundles: List<Bundle>,
     val stripUnusedNativeLibs: Boolean,
-    val device: DeviceConfig
+    val device: DeviceConfig,
+    val nativeLibraryPatches: List<NativeLibraryPatch> = emptyList()
 ) {
     /**
      * @param uid The bundle as the app knows it.

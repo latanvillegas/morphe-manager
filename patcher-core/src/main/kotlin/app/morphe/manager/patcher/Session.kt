@@ -11,6 +11,8 @@
 package app.morphe.manager.patcher
 
 import app.morphe.manager.patcher.logger.Logger
+import app.morphe.manager.patcher.native.NativeLibraryPatch
+import app.morphe.manager.patcher.native.NativeLibraryPatcher
 import app.morphe.patcher.Patcher
 import app.morphe.patcher.PatcherConfig
 import app.morphe.patcher.apk.ApkUtils.applyTo
@@ -37,7 +39,8 @@ class Session(
     private val logger: Logger,
     private val input: File,
     keepArchitectures: Set<CpuArchitecture>,
-    private val listener: PatchingListener
+    private val listener: PatchingListener,
+    private val nativeLibraryPatches: List<NativeLibraryPatch> = emptyList()
 ) : Closeable {
     private val tempDir = temporaryDir.resolve("patcher").also { it.mkdirs() }
 
@@ -114,6 +117,13 @@ class Session(
             withContext(Dispatchers.Default) {
                 // Run on default pool instead of I/O since we're processing large files in our own code
                 result.applyTo(patched)
+            }
+
+            if (nativeLibraryPatches.isNotEmpty()) {
+                withContext(Dispatchers.IO) {
+                    logger.info("Applying ${nativeLibraryPatches.size} guarded native library patch(es)...")
+                    NativeLibraryPatcher.apply(patched, nativeLibraryPatches)
+                }
             }
 
             withContext(Dispatchers.IO) {
